@@ -277,30 +277,47 @@ setDatabasesPath () {
 ################################################################################
 
 showUsage () {
+	red='\033[0;31m'
+	green='\033[1;32m'
+	NC='\033[0m' # No Color
+	bold=$(tput bold)
+	normal=$(tput sgr0)    
+    
     echo ""
-    echo "Usage: $0 [OPTION]..."
+    echo -e "Usage: $0 [OPTION]..."
     echo ""
-    echo "-a=[x.x],--apache=[x.x]     Set a specific apache version"
-    echo "-p=[x.x],--php=[x.x]        Set a specific php version"
-    echo "-m=[x.x],--mysql=[x.x]      Set a specific mysql version"
-    echo "-a=*,--apache=*             Get all available apache versions"
-    echo "-p=*,--php=*                Get all available php versions"
-    echo "-m=*,--mysql=*              Get all available mysql versions"
-    echo "-p,--php                    Get current php version"
-    echo "-a,--apache                 Get current apache version"
-    echo "-m,--mysql                  Get current mysql version"
-    echo "-r=[path],--root=[path]     Set the document root"
-    echo "-r,--root                   Get the current document root"
-    echo "-w=[path],--www=[path]      Set the path to projects"
-    echo "-w,--www                    Get the current path to projects"
-    echo "-d=[path],--database=[path] Set the path to databases"
-    echo "-d,--database               Get the current path to databases"
-    echo "-s,--start                  Start the devilbox docker containers"
+    echo -e "${bold}${green}-a=[x.x],--apache=[x.x]${normal}     Set a specific apache version"
+    echo -e "${bold}${green}-p=[x.x],--php=[x.x]${normal}        Set a specific php version"
+    echo -e "${bold}${green}-m=[x.x],--mysql=[x.x]${normal}      Set a specific mysql version"
+    echo -e "${bold}${green}-a=*,--apache=*${normal}             Get all available apache versions"
+    echo -e "${bold}${green}-p=*,--php=*${normal}                Get all available php versions"
+    echo -e "${bold}${green}-m=*,--mysql=*${normal}              Get all available mysql versions"
+    echo -e "${bold}${green}-p,--php${normal}                    Get current php version"
+    echo -e "${bold}${green}-a,--apache${normal}                 Get current apache version"
+    echo -e "${bold}${green}-m,--mysql${normal}                  Get current mysql version"
+    echo -e "${bold}${green}-r=[path],--root=[path]${normal}     Set the document root"
+    echo -e "${bold}${green}-r,--root${normal}                   Get the current document root"
+    echo -e "${bold}${green}-w=[path],--www=[path]${normal}      Set the path to projects"
+    echo -e "${bold}${green}-w,--www${normal}                    Get the current path to projects"
+    echo -e "${bold}${green}-d=[path],--database=[path]${normal} Set the path to databases"
+    echo -e "${bold}${green}-d,--database${normal}               Get the current path to databases"
+    echo -e "${bold}${green}-s,--start${normal}                  Start the devilbox docker containers"
+    echo -e "${bold}${green}--shell${normal}                     Enter in the devilbox docker shell"
+    echo -e "${bold}${green}-k,--kill${normal}                   Kill all docker containers ${red}${bold}(NOT JUST DEVILVOX)${normal}"
     echo ""
 }
 
 startDevilbox () {
-    docker-compose up httpd php mysql
+    docker-compose up -d httpd php mysql mailhog
+}
+
+stopDevilbox () {
+	docker kill $(docker ps -q)
+}
+
+enterShell () {
+	cmd="$DEVILBOX_PATH/shell.sh"
+	$cmd
 }
 
 main () {
@@ -327,6 +344,8 @@ main () {
             -d=*|--database=*) setDatabasesPath "${i#*=}"; shift;;
             -d|--database) getCurrentDatabasesPath; shift;;
             -s|--start) startDevilbox; shift;;
+            -k|--kill) stopDevilbox; shift;;
+			--shell) enterShell; shift;;
             *) error "Unknown command $i"; exit 1;;
         esac
     done
